@@ -1,167 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Photographer Pricing Calculator</title>
-  <link href="https://fonts.googleapis.com/css2?family=FiraCode:wght@300;400&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Licensing Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
-      font-family: 'Roboto Slab', serif;
-      background-color: #fff;
-      color: #111;
-      padding: 2rem;
-      max-width: 800px;
-      margin: 0 auto;
+      font-family: 'Helvetica', 'Arial', sans-serif;
+      background-color: #ffffff;
+      padding: 40px;
+      color: #000000;
     }
     h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
+      font-family: 'Helvetica', 'Arial', sans-serif;
+      font-weight: bold;
+      font-size: 24px;
+      margin-bottom: 20px;
     }
     label {
+      margin-top: 20px;
+      font-weight: bold;
       display: block;
-      margin-top: 1rem;
-      font-weight: 600;
     }
-    input, select {
-      font-family: 'Courier Prime', monospace;
+    input[type="number"], textarea, button, select {
       width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.5rem;
+      padding: 12px;
+      margin-top: 6px;
       border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1rem;
+      border-radius: 8px;
+      font-size: 16px;
+      background-color: #f9f9f9;
+      color: #000;
+      transition: box-shadow 0.3s ease;
+      font-family: 'Fira Code', monospace;
+    }
+    input:hover, textarea:hover, button:hover, select:hover {
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
     }
     button {
       background-color: #000;
       color: #fff;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      margin-top: 2rem;
+      font-weight: bold;
       cursor: pointer;
-      border-radius: 4px;
+      margin-top: 30px;
+      border: none;
     }
-    .results {
-      margin-top: 2rem;
-      padding: 1rem;
-      background: #f7f7f7;
-      border-radius: 6px;
-      font-family: 'Courier Prime', monospace;
+    button:hover {
+      background-color: #333;
     }
-    .results p {
-      margin: 0.5rem 0;
-      font-weight: 500;
+    .result {
+      margin-top: 30px;
+      font-size: 18px;
+      font-family: 'Fira Code', monospace;
+      font-weight: bold;
+      background-color: #f0f0f0;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
     }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 1rem;
-        font-size: 0.95rem;
-      }
-      input, select {
-        font-size: 1rem;
-        padding: 0.5rem;
-      }
-      h1 {
-        font-size: 1.5rem;
-        text-align: center;
-      }
-      label {
-        margin-top: 0.75rem;
-      }
-      button {
-        width: 100%;
-        font-size: 1rem;
-      }
-      .results {
-        padding: 0.75rem;
-      }
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Photography Pricing Calculator</h1>
+  <h1>Usage / Image Licensing Calculator</h1>
 
-  <div id="calculator">
-    <label>Target Yearly Income ($)
-      <input type="number" id="yearlyIncome" placeholder="e.g. 80000">
-    </label>
+  <label for="creativeFee">Creative Fee ($):</label>
+  <input type="number" id="creativeFee" placeholder="Enter shoot fee" />
 
-    <label>Billable Days Per Month
-      <input type="number" id="billableDays" placeholder="e.g. 10">
-    </label>
+  <label for="experience">Experience Level:</label>
+  <select id="experience">
+    <option value="1">Entry (1x)</option>
+    <option value="1.25">Mid-Level (1.25x)</option>
+    <option value="1.5">Experienced (1.5x)</option>
+    <option value="2">Top-Tier (2x)</option>
+  </select>
 
-    <label>Experience Multiplier
-      <select id="experienceMultiplier">
-        <option value="1">Beginner (1.0x)</option>
-        <option value="1.5">Intermediate (1.5x)</option>
-        <option value="2.5">Expert (2.5x)</option>
-      </select>
-    </label>
+  <label for="term">Usage Term Duration:</label>
+  <select id="term">
+    <option value="0.5">3 Months</option>
+    <option value="0.75">6 Months</option>
+    <option value="1">1 Year</option>
+    <option value="1.5">2 Years</option>
+    <option value="2.5">Perpetual</option>
+  </select>
 
-    <label>Monthly Overhead: Software Subscriptions ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 50">
-    </label>
-    <label>Website/Hosting ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 20">
-    </label>
-    <label>Equipment Insurance ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 40">
-    </label>
-    <label>Maintenance/Repairs ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 30">
-    </label>
-    <label>Auto Insurance ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 100">
-    </label>
-    <label>Marketing/Promotion ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 75">
-    </label>
-    <label>Film Processing ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 60">
-    </label>
-    <label>Studio Rental ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 200">
-    </label>
-    <label>Miscellaneous ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 100">
-    </label>
-
-    <button onclick="calculateRates()">Calculate</button>
-
-    <div class="results">
-      <p><strong>Monthly Income Goal:</strong> <span id="monthlyIncome">—</span></p>
-      <p><strong>Total Monthly Cost:</strong> <span id="monthlyTotal">—</span></p>
-      <p><strong>Minimum Day Rate:</strong> <span id="minimumDayRate">—</span></p>
-      <p><strong>Adjusted Day Rate (Experience):</strong> <span id="adjustedDayRate">—</span></p>
-      <p><strong>Suggested Hourly Rate:</strong> <span id="hourlyRate">—</span></p>
-    </div>
+  <label>Distribution Format (Select all that apply):</label>
+  <div class="checkbox-group" id="mediaCheckboxes">
+    <label><input type="checkbox" value="web"> Web (Organic)</label>
+    <label><input type="checkbox" value="0.4"> Social Media</label>
+    <label><input type="checkbox" value="0.7"> Digital Ads</label>
+    <label><input type="checkbox" value="0.8"> Print</label>
+    <label><input type="checkbox" value="1.2"> Billboard</label>
+    <label><input type="checkbox" value="1.8"> TV / Streaming</label>
   </div>
 
+  <label for="geo">Geographic Scope:</label>
+  <select id="geo">
+    <option value="0">Local</option>
+    <option value="0.25">Regional</option>
+    <option value="0.6">National</option>
+    <option value="1.2">International</option>
+  </select>
+
+  <label for="exclusivity">Exclusivity:</label>
+  <select id="exclusivity">
+    <option value="0">None</option>
+    <option value="0.6">Industry Exclusive</option>
+    <option value="1.2">Full Exclusive</option>
+  </select>
+
+  <label for="invoiceInfo">Your Invoice Information:</label>
+  <textarea id="invoiceInfo" rows="5" placeholder="Your name, business name, email, phone number, address, etc."></textarea>
+
+  <button onclick="calculateFee()">Calculate Licensing Fee</button>
+  <button onclick="exportEstimate()">Export Estimate</button>
+  <button onclick="exportPDF()">Download PDF</button>
+
+  <div class="result" id="result"></div>
+
   <script>
-    function calculateRates() {
-      const inputs = document.querySelectorAll('.expense-input');
-      let totalOverhead = 0;
-      inputs.forEach(input => totalOverhead += Number(input.value || 0));
+    let lastCalculation = '';
 
-      const yearlyIncome = Number(document.getElementById('yearlyIncome').value);
-      const billableDays = Number(document.getElementById('billableDays').value);
-      const multiplier = Number(document.getElementById('experienceMultiplier').value);
+    function calculateFee() {
+      const creativeFee = parseFloat(document.getElementById('creativeFee').value);
+      const experienceMultiplier = parseFloat(document.getElementById('experience').value);
+      const termMultiplier = parseFloat(document.getElementById('term').value);
+      const geoMultiplier = parseFloat(document.getElementById('geo').value);
+      const exclusivityMultiplier = parseFloat(document.getElementById('exclusivity').value);
 
-      if (!yearlyIncome || !billableDays) return;
+      let mediaMultiplier = 0;
+      const checkboxes = document.querySelectorAll('#mediaCheckboxes input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          if (cb.value === "web" && termMultiplier <= 0.75) {
+            mediaMultiplier += 0; // Web included for up to 6 months
+          } else if (cb.value === "web") {
+            mediaMultiplier += 0.2; // If beyond 6 months, add cost
+          } else {
+            mediaMultiplier += parseFloat(cb.value);
+          }
+        }
+      });
 
-      const monthlyIncome = yearlyIncome / 12;
-      const monthlyTotal = monthlyIncome + totalOverhead;
-      const minDayRate = monthlyTotal / billableDays;
-      const adjustedRate = minDayRate * multiplier;
-      const hourlyRate = adjustedRate / 8;
+      const totalMultiplier = (termMultiplier + mediaMultiplier + geoMultiplier + exclusivityMultiplier) * experienceMultiplier;
+      const licensingFee = creativeFee * totalMultiplier;
+      const totalFee = creativeFee + licensingFee;
 
-      document.getElementById('monthlyIncome').innerText = `$${monthlyIncome.toFixed(2)}`;
-      document.getElementById('monthlyTotal').innerText = `$${monthlyTotal.toFixed(2)}`;
-      document.getElementById('minimumDayRate').innerText = `$${minDayRate.toFixed(2)}`;
-      document.getElementById('adjustedDayRate').innerText = `$${adjustedRate.toFixed(2)}`;
-      document.getElementById('hourlyRate').innerText = `$${hourlyRate.toFixed(2)}`;
+      lastCalculation = `Licensing Fee: $${licensingFee.toFixed(2)}\nTotal Fee (including creative): $${totalFee.toFixed(2)}`;
+      document.getElementById('result').innerHTML = lastCalculation.replace(/\n/g, '<br>');
+    }
+
+    function exportEstimate() {
+      const invoiceInfo = document.getElementById('invoiceInfo').value;
+      const blob = new Blob([
+        `Image Licensing Estimate\n\n${invoiceInfo}\n\n${lastCalculation}`
+      ], { type: 'text/plain;charset=utf-8' });
+
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'usage_estimate.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    }
+
+    async function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const invoiceInfo = document.getElementById('invoiceInfo').value;
+      const estimateText = `Image Licensing Estimate\n\n${invoiceInfo}\n\n${lastCalculation}`;
+
+      const lines = doc.splitTextToSize(estimateText, 180);
+      doc.text(lines, 15, 20);
+
+      doc.save('usage_estimate.pdf');
     }
   </script>
 </body>
