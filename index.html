@@ -14,9 +14,9 @@
       margin: 0 auto;
     }
     h1 {
+      font-family: 'Helvetica', sans-serif;
       font-size: 2rem;
       margin-bottom: 1rem;
-      font-family: 'Helvetica Neue', sans-serif;
     }
     label {
       display: block;
@@ -52,6 +52,7 @@
       font-weight: 500;
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <h1>Photography Pricing Calculator</h1>
@@ -73,29 +74,23 @@
       </select>
     </label>
 
-    <label>Monthly Overhead: Software Subscriptions ($/month)
+    <label>Web Subscriptions ($/month)
       <input type="number" class="expense-input" placeholder="e.g. 50">
     </label>
-    <label>Website/Hosting ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 20">
-    </label>
-    <label>Equipment Insurance ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 40">
-    </label>
-    <label>Auto Insurance ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 100">
+    <label>Software Subscriptions ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 50">
     </label>
     <label>Marketing/Promotion ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 75">
+      <input type="number" class="expense-input" placeholder="e.g. 100">
     </label>
-    <label>Film Processing ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 60">
+    <label>Insurance (Equipment/Auto $/month)
+      <input type="number" class="expense-input" placeholder="e.g. 120">
     </label>
-    <label>Studio Rental ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 200">
+    <label>Studio/Location Rent ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 500">
     </label>
     <label>Miscellaneous ($/month)
-      <input type="number" class="expense-input" placeholder="e.g. 100">
+      <input type="number" class="expense-input" placeholder="e.g. 75">
     </label>
 
     <button onclick="calculateRates()">Calculate</button>
@@ -105,35 +100,62 @@
       <p><strong>Total Monthly Cost:</strong> <span id="monthlyTotal">—</span></p>
       <p><strong>Minimum Day Rate:</strong> <span id="minimumDayRate">—</span></p>
       <p><strong>Adjusted Rate (Experience Multiplier):</strong> <span id="adjustedDayRate">—</span></p>
-      <p><strong>Suggested Hourly Rate:</strong> <span id="suggestedHourlyRate">—</span></p>
     </div>
+
+    <button onclick="generatePDF()">Download PDF Estimate</button>
   </div>
 
   <script>
     function calculateRates() {
-      // Grab all the expense inputs
-      const expenses = document.querySelectorAll('.expense-input');
+      const inputs = document.querySelectorAll('.expense-input');
       let totalOverhead = 0;
-      expenses.forEach(el => totalOverhead += Number(el.value) || 0);
+      inputs.forEach(input => totalOverhead += Number(input.value || 0));
 
-      // Grab other inputs
-      const yearlyIncome   = Number(document.getElementById('yearlyIncome').value)   || 0;
-      const billableDays   = Number(document.getElementById('billableDays').value)   || 1;
-      const multiplier     = Number(document.getElementById('experienceMultiplier').value) || 1;
+      const yearlyIncome = Number(document.getElementById('yearlyIncome').value);
+      const billableDays = Number(document.getElementById('billableDays').value);
+      const multiplier = Number(document.getElementById('experienceMultiplier').value);
 
-      // Perform calculations
-      const monthlyIncome  = yearlyIncome / 12;
-      const monthlyTotal   = monthlyIncome + totalOverhead;
-      const dayRate        = monthlyTotal / billableDays;
-      const adjustedRate   = dayRate * multiplier;
-      const hourlyRate     = dayRate / 8; // assuming 8-hour workday
+      if (!yearlyIncome || !billableDays) return;
 
-      // Update the result fields
-      document.getElementById('monthlyIncome').innerText      = `$${monthlyIncome.toFixed(2)}`;
-      document.getElementById('monthlyTotal').innerText       = `$${monthlyTotal.toFixed(2)}`;
-      document.getElementById('minimumDayRate').innerText     = `$${dayRate.toFixed(2)}`;
-      document.getElementById('adjustedDayRate').innerText    = `$${adjustedRate.toFixed(2)}`;
-      document.getElementById('suggestedHourlyRate').innerText= `$${hourlyRate.toFixed(2)}`;
+      const monthlyIncome = yearlyIncome / 12;
+      const monthlyTotal = monthlyIncome + totalOverhead;
+      const minDayRate = monthlyTotal / billableDays;
+      const adjustedRate = minDayRate * multiplier;
+
+      document.getElementById('monthlyIncome').innerText = `$${monthlyIncome.toFixed(2)}`;
+      document.getElementById('monthlyTotal').innerText = `$${monthlyTotal.toFixed(2)}`;
+      document.getElementById('minimumDayRate').innerText = `$${minDayRate.toFixed(2)}`;
+      document.getElementById('adjustedDayRate').innerText = `$${adjustedRate.toFixed(2)}`;
+    }
+
+    function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const monthlyIncome = document.getElementById('monthlyIncome').innerText;
+      const monthlyTotal = document.getElementById('monthlyTotal').innerText;
+      const minimumDayRate = document.getElementById('minimumDayRate').innerText;
+      const adjustedDayRate = document.getElementById('adjustedDayRate').innerText;
+
+      doc.text('Photographer Estimate', 20, 20);
+      doc.text(`Monthly Income Goal: ${monthlyIncome}`, 20, 30);
+      doc.text(`Total Monthly Cost: ${monthlyTotal}`, 20, 40);
+      doc.text(`Minimum Day Rate: ${minimumDayRate}`, 20, 50);
+      doc.text(`Adjusted Day Rate (Experience Multiplier): ${adjustedDayRate}`, 20, 60);
+
+      doc.text('--- Client Information ---', 20, 80);
+      doc.text('Name: _____________________', 20, 90);
+      doc.text('Phone: _____________________', 20, 100);
+      doc.text('Email: _____________________', 20, 110);
+      doc.text('Bill-To:', 20, 120);
+      doc.text('Client Name: ______________', 20, 130);
+      doc.text('Client Phone: ______________', 20, 140);
+      doc.text('Client Email: ______________', 20, 150);
+      doc.text('Client Address: ____________', 20, 160);
+      doc.text('Invoice Number: _________', 20, 170);
+      doc.text('Project Title: _____________', 20, 180);
+
+      doc.save('Estimate.pdf');
     }
   </script>
 </body>
