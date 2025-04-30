@@ -1,106 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photography Pricing Calculator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Helvetica:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photographer Pricing Calculator</title>
   <style>
     body {
-      font-family: 'Helvetica', sans-serif;
-      color: #000;
-      background-color: #f9f9f9;
-      padding: 20px;
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: #fff;
+      color: #111;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
     }
     h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
       font-family: 'Helvetica', sans-serif;
-      font-size: 24px;
-      margin-bottom: 20px;
-      color: #333;
     }
     label {
       display: block;
-      margin-top: 20px;
-      font-weight: bold;
-      color: #333;
+      margin-top: 1rem;
+      font-weight: 600;
     }
     input, select {
       width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-      font-size: 16px;
-      border-radius: 6px;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
       border: 1px solid #ccc;
-      box-sizing: border-box;
-      background-color: #fff;
+      border-radius: 4px;
+      font-size: 1rem;
     }
     button {
-      background-color: #333;
+      background-color: #000;
       color: #fff;
-      margin-top: 20px;
       border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      margin-top: 2rem;
       cursor: pointer;
-      padding: 10px;
+      border-radius: 4px;
     }
-    .result {
-      margin-top: 20px;
-      padding: 20px;
-      background-color: #f1f1f1;
-      font-weight: bold;
-      border-radius: 10px;
-      font-family: 'Fira Code', monospace;
-      font-size: 18px;
+    .results {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #f7f7f7;
+      border-radius: 6px;
+    }
+    .results p {
+      margin: 0.5rem 0;
+      font-weight: 500;
     }
   </style>
 </head>
 <body>
-
   <h1>Photography Pricing Calculator</h1>
 
-  <label for="experience">Experience Level:</label>
-  <select id="experience">
-    <option value="50">Entry Level ($50/hr)</option>
-    <option value="75">Mid-Level ($75/hr)</option>
-    <option value="100">Experienced ($100/hr)</option>
-    <option value="150">Top-Tier ($150/hr)</option>
-  </select>
+  <div id="calculator">
+    <label>Target Yearly Income ($)
+      <input type="number" id="yearlyIncome" placeholder="e.g. 80000">
+    </label>
 
-  <label for="overhead">Overhead Costs ($):</label>
-  <input type="number" id="overhead" placeholder="Enter your overhead costs (e.g., equipment, insurance)" />
+    <label>Billable Days Per Month
+      <input type="number" id="billableDays" placeholder="e.g. 10">
+    </label>
 
-  <label for="hours">Estimated Hours:</label>
-  <input type="number" id="hours" placeholder="Enter estimated number of hours" />
+    <label>Experience Multiplier
+      <select id="experienceMultiplier">
+        <option value="1">Beginner (1.0x)</option>
+        <option value="1.5">Intermediate (1.5x)</option>
+        <option value="2.5">Expert (2.5x)</option>
+      </select>
+    </label>
 
-  <label for="fullDay">Full-Day Rate (8 hours):</label>
-  <input type="number" id="fullDay" placeholder="Enter your full-day rate" />
+    <label>Monthly Overhead: Software Subscriptions ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 50">
+    </label>
+    <label>Website/Hosting ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 20">
+    </label>
+    <label>Equipment Insurance ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 40">
+    </label>
+    <label>Auto Insurance ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 100">
+    </label>
+    <label>Marketing/Promotion ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 75">
+    </label>
+    <label>Film Processing ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 60">
+    </label>
+    <label>Studio Rental ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 200">
+    </label>
+    <label>Miscellaneous ($/month)
+      <input type="number" class="expense-input" placeholder="e.g. 100">
+    </label>
 
-  <button onclick="calculatePricing()">Calculate Pricing</button>
+    <button onclick="calculateRates()">Calculate</button>
 
-  <div class="result" id="result"></div>
+    <div class="results">
+      <p><strong>Monthly Income Goal:</strong> <span id="monthlyIncome">—</span></p>
+      <p><strong>Total Monthly Cost:</strong> <span id="monthlyTotal">—</span></p>
+      <p><strong>Minimum Day Rate:</strong> <span id="minimumDayRate">—</span></p>
+      <p><strong>Suggested Hourly Rate:</strong> <span id="suggestedHourlyRate">—</span></p>
+      <p><strong>Adjusted Rate (Experience Multiplier):</strong> <span id="adjustedDayRate">—</span></p>
+    </div>
+  </div>
 
   <script>
-    function calculatePricing() {
-      const experience = parseFloat(document.getElementById('experience').value);
-      const overhead = parseFloat(document.getElementById('overhead').value);
-      const hours = parseFloat(document.getElementById('hours').value);
-      const fullDayRate = parseFloat(document.getElementById('fullDay').value);
+    function calculateRates() {
+      const inputs = document.querySelectorAll('.expense-input');
+      let totalOverhead = 0;
+      inputs.forEach(input => totalOverhead += Number(input.value || 0));
 
-      if (isNaN(experience) || isNaN(overhead) || isNaN(hours) || isNaN(fullDayRate)) {
-        document.getElementById('result').innerText = "Please fill out all fields correctly.";
-        return;
-      }
+      const yearlyIncome = Number(document.getElementById('yearlyIncome').value);
+      const billableDays = Number(document.getElementById('billableDays').value);
+      const multiplier = Number(document.getElementById('experienceMultiplier').value);
 
-      const hourlyRate = experience + (overhead / hours); // Adjust hourly rate based on overhead
-      const totalHourly = hourlyRate * hours;
-      const totalFullDay = fullDayRate + overhead; // Add overhead to full-day rate
+      if (!yearlyIncome || !billableDays) return;
 
-      document.getElementById('result').innerText = `
-        Hourly Rate: $${hourlyRate.toFixed(2)}/hr
-        Total for ${hours} hours: $${totalHourly.toFixed(2)}
-        Full-Day Rate: $${totalFullDay.toFixed(2)}
-      `;
+      const monthlyIncome = yearlyIncome / 12;
+      const monthlyTotal = monthlyIncome + totalOverhead;
+      const minDayRate = monthlyTotal / billableDays;
+      const adjustedRate = minDayRate * multiplier;
+      const hourlyRate = minDayRate / 8; // Assuming 8-hour workdays
+
+      document.getElementById('monthlyIncome').innerText = `$${monthlyIncome.toFixed(2)}`;
+      document.getElementById('monthlyTotal').innerText = `$${monthlyTotal.toFixed(2)}`;
+      document.getElementById('minimumDayRate').innerText = `$${minDayRate.toFixed(2)}`;
+      document.getElementById('suggestedHourlyRate').innerText = `$${hourlyRate.toFixed(2)}`;
+      document.getElementById('adjustedDayRate').innerText = `$${adjustedRate.toFixed(2)}`;
     }
   </script>
-
 </body>
 </html>
