@@ -16,7 +16,7 @@
     h1 {
       font-size: 2rem;
       margin-bottom: 1rem;
-      font-family: 'Helvetica', sans-serif;
+      font-family: 'Helvetica Neue', sans-serif;
     }
     label {
       display: block;
@@ -104,34 +104,36 @@
       <p><strong>Monthly Income Goal:</strong> <span id="monthlyIncome">—</span></p>
       <p><strong>Total Monthly Cost:</strong> <span id="monthlyTotal">—</span></p>
       <p><strong>Minimum Day Rate:</strong> <span id="minimumDayRate">—</span></p>
-      <p><strong>Suggested Hourly Rate:</strong> <span id="suggestedHourlyRate">—</span></p>
       <p><strong>Adjusted Rate (Experience Multiplier):</strong> <span id="adjustedDayRate">—</span></p>
+      <p><strong>Suggested Hourly Rate:</strong> <span id="suggestedHourlyRate">—</span></p>
     </div>
   </div>
 
   <script>
     function calculateRates() {
-      const inputs = document.querySelectorAll('.expense-input');
+      // Grab all the expense inputs
+      const expenses = document.querySelectorAll('.expense-input');
       let totalOverhead = 0;
-      inputs.forEach(input => totalOverhead += Number(input.value || 0));
+      expenses.forEach(el => totalOverhead += Number(el.value) || 0);
 
-      const yearlyIncome = Number(document.getElementById('yearlyIncome').value);
-      const billableDays = Number(document.getElementById('billableDays').value);
-      const multiplier = Number(document.getElementById('experienceMultiplier').value);
+      // Grab other inputs
+      const yearlyIncome   = Number(document.getElementById('yearlyIncome').value)   || 0;
+      const billableDays   = Number(document.getElementById('billableDays').value)   || 1;
+      const multiplier     = Number(document.getElementById('experienceMultiplier').value) || 1;
 
-      if (!yearlyIncome || !billableDays) return;
+      // Perform calculations
+      const monthlyIncome  = yearlyIncome / 12;
+      const monthlyTotal   = monthlyIncome + totalOverhead;
+      const dayRate        = monthlyTotal / billableDays;
+      const adjustedRate   = dayRate * multiplier;
+      const hourlyRate     = dayRate / 8; // assuming 8-hour workday
 
-      const monthlyIncome = yearlyIncome / 12;
-      const monthlyTotal = monthlyIncome + totalOverhead;
-      const minDayRate = monthlyTotal / billableDays;
-      const adjustedRate = minDayRate * multiplier;
-      const hourlyRate = minDayRate / 8; // Assuming 8-hour workdays
-
-      document.getElementById('monthlyIncome').innerText = `$${monthlyIncome.toFixed(2)}`;
-      document.getElementById('monthlyTotal').innerText = `$${monthlyTotal.toFixed(2)}`;
-      document.getElementById('minimumDayRate').innerText = `$${minDayRate.toFixed(2)}`;
-      document.getElementById('suggestedHourlyRate').innerText = `$${hourlyRate.toFixed(2)}`;
-      document.getElementById('adjustedDayRate').innerText = `$${adjustedRate.toFixed(2)}`;
+      // Update the result fields
+      document.getElementById('monthlyIncome').innerText      = `$${monthlyIncome.toFixed(2)}`;
+      document.getElementById('monthlyTotal').innerText       = `$${monthlyTotal.toFixed(2)}`;
+      document.getElementById('minimumDayRate').innerText     = `$${dayRate.toFixed(2)}`;
+      document.getElementById('adjustedDayRate').innerText    = `$${adjustedRate.toFixed(2)}`;
+      document.getElementById('suggestedHourlyRate').innerText= `$${hourlyRate.toFixed(2)}`;
     }
   </script>
 </body>
