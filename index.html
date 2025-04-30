@@ -1,134 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Photography Pricing Calculator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
-      font-family: 'Helvetica', 'Arial', sans-serif;
-      background-color: #ffffff;
-      color: #000000;
-      padding: 40px;
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+      color: #333;
+      margin: 20px;
     }
-    h1 {
-      font-weight: bold;
-      font-size: 24px;
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #000;
+    }
+    input, select, button {
+      padding: 10px;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    .invoice-header {
       margin-bottom: 20px;
     }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 20px;
+    .flex {
+      display: flex;
+      justify-content: space-between;
     }
-    input[type="number"], button, textarea {
-      width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-      background-color: #f9f9f9;
-      font-family: 'Fira Code', monospace;
-    }
-    input:hover, textarea:hover, button:hover {
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-    }
-    button {
-      background-color: #000;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 20px;
-      border: none;
-    }
-    button:hover {
-      background-color: #333;
-    }
-    .result, .estimate-box {
-      margin-top: 30px;
-      font-size: 16px;
-      font-family: 'Fira Code', monospace;
-      font-weight: bold;
-      background-color: #f0f0f0;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    .flex div {
+      width: 48%;
     }
   </style>
 </head>
+
 <body>
-  <h1>Photography Pricing Calculator</h1>
+  <div class="container">
+    <h1>Photography Pricing Calculator</h1>
 
-  <label for="hourlyRate">Hourly Rate ($):</label>
-  <input type="number" id="hourlyRate" placeholder="Enter your hourly rate" />
+    <div class="invoice-header">
+      <h2>Estimate Details</h2>
+      <div class="flex">
+        <div>
+          <label>Your Name</label>
+          <input type="text" id="yourName" />
+          <label>Phone Number</label>
+          <input type="text" id="yourPhone" />
+          <label>Your Address</label>
+          <input type="text" id="yourAddress" />
+        </div>
+        <div>
+          <label>Invoice Number</label>
+          <input type="text" id="invoiceNumber" />
+          <label>Client Name</label>
+          <input type="text" id="clientName" />
+          <label>Client Contact Info</label>
+          <input type="text" id="clientContact" />
+        </div>
+      </div>
+      <label>Project Title</label>
+      <input type="text" id="projectTitle" />
+      <label>Payment Terms</label>
+      <select id="paymentTerms">
+        <option value="Due on receipt">Due on receipt</option>
+        <option value="Net 30">Net 30</option>
+        <option value="Net 60">Net 60</option>
+        <option value="Net 90">Net 90</option>
+      </select>
+    </div>
 
-  <label for="halfDayRate">Half-Day Rate ($):</label>
-  <input type="number" id="halfDayRate" placeholder="Enter your half-day rate" />
+    <h2>Line Items</h2>
+    <select id="lineItemType">
+      <option value="Hourly">Hourly</option>
+      <option value="Half-Day">Half-Day</option>
+      <option value="Full-Day">Full-Day</option>
+    </select>
+    <input type="text" id="lineItemDescription" placeholder="Description" />
+    <input type="number" id="lineItemQty" placeholder="Quantity" />
+    <input type="number" id="lineItemRate" placeholder="Rate (USD)" />
+    <button onclick="addLineItem()">Add Line Item</button>
 
-  <label for="fullDayRate">Full-Day Rate ($):</label>
-  <input type="number" id="fullDayRate" placeholder="Enter your full-day rate" />
+    <table id="estimateTable">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Unit Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3"><strong>Total</strong></td>
+          <td id="totalAmount">$0.00</td>
+        </tr>
+      </tfoot>
+    </table>
 
-  <label for="hours">Hours Worked:</label>
-  <input type="number" id="hours" placeholder="Number of hours worked" />
+    <button onclick="downloadPDF()">Download PDF Estimate</button>
+  </div>
 
-  <label for="useHalfDay">Use Half-Day Rate?</label>
-  <input type="checkbox" id="useHalfDay" />
-
-  <label for="useFullDay">Use Full-Day Rate?</label>
-  <input type="checkbox" id="useFullDay" />
-
-  <label for="invoiceInfo">Your Invoice Information:</label>
-  <textarea id="invoiceInfo" rows="5" placeholder="Your name, business name, email, etc."></textarea>
-
-  <button onclick="calculateTotal()">Calculate Total</button>
-  <button onclick="downloadPDF()">Download Estimate PDF</button>
-
-  <div class="result" id="result"></div>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    let totalSummary = '';
+    let total = 0;
 
-    function calculateTotal() {
-      const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
-      const halfDayRate = parseFloat(document.getElementById('halfDayRate').value) || 0;
-      const fullDayRate = parseFloat(document.getElementById('fullDayRate').value) || 0;
-      const hours = parseFloat(document.getElementById('hours').value) || 0;
-      const useHalfDay = document.getElementById('useHalfDay').checked;
-      const useFullDay = document.getElementById('useFullDay').checked;
+    function addLineItem() {
+      const type = document.getElementById("lineItemType").value;
+      const desc = document.getElementById("lineItemDescription").value;
+      const qty = parseFloat(document.getElementById("lineItemQty").value);
+      const rate = parseFloat(document.getElementById("lineItemRate").value);
+      const totalLine = qty * rate;
+      total += totalLine;
 
-      let total = 0;
-      let breakdown = '';
+      const table = document.getElementById("estimateTable").getElementsByTagName('tbody')[0];
+      const row = table.insertRow();
+      row.insertCell(0).textContent = `${type} / ${desc}`;
+      row.insertCell(1).textContent = qty;
+      row.insertCell(2).textContent = `$${rate.toLocaleString()} USD`;
+      row.insertCell(3).textContent = `$${totalLine.toLocaleString()} USD`;
 
-      if (useFullDay) {
-        total += fullDayRate;
-        breakdown += `Full-Day Rate: $${fullDayRate.toFixed(2)}\n`;
-      } else if (useHalfDay) {
-        total += halfDayRate;
-        breakdown += `Half-Day Rate: $${halfDayRate.toFixed(2)}\n`;
-      } else {
-        const hourlyTotal = hourlyRate * hours;
-        total += hourlyTotal;
-        breakdown += `Hourly (${hours}h x $${hourlyRate.toFixed(2)}): $${hourlyTotal.toFixed(2)}\n`;
-      }
-
-      totalSummary = `${breakdown}\nTotal: $${total.toFixed(2)}`;
-      document.getElementById('result').innerText = totalSummary;
+      document.getElementById("totalAmount").textContent = `$${total.toLocaleString()} USD`;
     }
 
     async function downloadPDF() {
-      const { jsPDF } = window.jspdf;
+      const {{ jsPDF }} = window.jspdf;
       const doc = new jsPDF();
 
-      const invoiceInfo = document.getElementById('invoiceInfo').value;
-      const content = `Photography Estimate\n\n${invoiceInfo}\n\n${totalSummary}`;
-      const lines = doc.splitTextToSize(content, 180);
+      const name = document.getElementById("yourName").value;
+      const phone = document.getElementById("yourPhone").value;
+      const address = document.getElementById("yourAddress").value;
+      const invoice = document.getElementById("invoiceNumber").value;
+      const client = document.getElementById("clientName").value;
+      const contact = document.getElementById("clientContact").value;
+      const project = document.getElementById("projectTitle").value;
+      const terms = document.getElementById("paymentTerms").value;
 
-      doc.text(lines, 15, 20);
-      doc.save('photography_estimate.pdf');
+      doc.text(`Daniel Pop\nDANPOPSD\n${address}`, 10, 10);
+      doc.text(`Invoice Number: ${invoice}`, 150, 10);
+      doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 150, 20);
+      doc.text(`Billed to:\n${client}\n${contact}`, 10, 40);
+      doc.text(`Project: ${project}`, 10, 60);
+      doc.text(`Payment Terms: ${terms}`, 10, 70);
+
+      let startY = 90;
+      doc.text("Item", 10, startY);
+      doc.text("Qty", 90, startY);
+      doc.text("Unit Price", 120, startY);
+      doc.text("Total", 160, startY);
+
+      const rows = document.querySelectorAll("#estimateTable tbody tr");
+      rows.forEach((row, i) => {
+        const cols = row.querySelectorAll("td");
+        doc.text(cols[0].textContent, 10, startY + 10 + (i * 10));
+        doc.text(cols[1].textContent, 90, startY + 10 + (i * 10));
+        doc.text(cols[2].textContent, 120, startY + 10 + (i * 10));
+        doc.text(cols[3].textContent, 160, startY + 10 + (i * 10));
+      });
+
+      doc.text(`Total: ${document.getElementById("totalAmount").textContent}`, 160, startY + 20 + (rows.length * 10));
+
+      doc.save(`Estimate_${invoice}.pdf`);
     }
   </script>
 </body>
+
 </html>
